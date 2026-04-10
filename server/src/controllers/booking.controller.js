@@ -80,7 +80,7 @@ exports.handleBookingAction = async (req, res) => {
     if (!booking) return res.status(404).send('Booking not found.');
 
     if (booking.status !== 'pending') {
-      return res.send(\`This booking was already processed (Current status: \${booking.status})\`);
+      return res.send(`This booking was already processed (Current status: ${booking.status})`);
     }
 
     // Update status
@@ -95,32 +95,32 @@ exports.handleBookingAction = async (req, res) => {
         : '❌ Lab Booking Declined';
         
       const html = action === 'approve'
-        ? \`
-          <h2>Hi \${user.name},</h2>
+        ? `
+          <h2>Hi ${user.name},</h2>
           <p>Great news! Your hardware lab session has been <b>approved</b> by the admin.</p>
           <div style="background-color: #d1fae5; padding: 15px; border-radius: 8px;">
-            <p><b>Date:</b> \${booking.date}</p>
-            <p><b>Time:</b> \${booking.start_time} - \${booking.end_time}</p>
+            <p><b>Date:</b> ${booking.date}</p>
+            <p><b>Time:</b> ${booking.start_time} - ${booking.end_time}</p>
           </div>
           <p>Please log in 5 minutes early to prepare for your session.</p>
-        \`
-        : \`
-          <h2>Hi \${user.name},</h2>
-          <p>Unfortunately, your hardware lab session on <b>\${booking.date} at \${booking.start_time}</b> has been <b>declined</b>.</p>
+        `
+        : `
+          <h2>Hi ${user.name},</h2>
+          <p>Unfortunately, your hardware lab session on <b>${booking.date} at ${booking.start_time}</b> has been <b>declined</b>.</p>
           <p>This may be due to maintenance or schedule conflicts. Please try booking a different slot.</p>
-        \`;
+        `;
       
       sendEmail(user.email, subject, html);
     }
 
     // Send HTTP Response back to Admin in the browser
     const color = action === 'approve' ? '#10b981' : '#ef4444';
-    res.send(\`
+    res.send(`
       <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
-        <h1 style="color: \${color};">Booking successfully \${action}d!</h1>
-        <p>The student (\${user?.email}) has been notified via email.</p>
+        <h1 style="color: ${color};">Booking successfully ${action}d!</h1>
+        <p>The student (${user?.email}) has been notified via email.</p>
       </div>
-    \`);
+    `);
     
   } catch (error) {
     console.error('Admin booking action error:', error);
