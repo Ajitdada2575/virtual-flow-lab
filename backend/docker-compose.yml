@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: flow_control_lab_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: virtual_lab_db
+      MYSQL_USER: lab_user
+      MYSQL_PASSWORD: lab_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
