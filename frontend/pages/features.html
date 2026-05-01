@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore Features — Virtual Flow Lab</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   BASE — identical to first.html
+══════════════════════════════════════════════ */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #1e293b;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f6ff;   /* EXACT match first.html */
+}
+
+/* canvas z:0 */
+#bg-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* glow overlay z:1 — exact copy from first.html */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 15%, rgba(99,179,237,0.22)  0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 85%, rgba(167,139,250,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.55) 0%, transparent 80%);
+}
+
+/* content z:2 */
+.page-content { position: relative; z-index: 2; }
+
+/* ── GLASS CARD — exact from first.html ── */
+.glass {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99,179,237,0.28);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(99,130,180,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.glass:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 14px 40px rgba(99,130,180,0.18), inset 0 1px 0 #fff;
+  border-color: rgba(99,179,237,0.55);
+}
+
+/* ── NAVBAR — exact from first.html ── */
+.navbar {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(99,179,237,0.2);
+  box-shadow: 0 2px 12px rgba(99,130,180,0.08);
+}
+.navbar-brand {
+  font-size: 20px; font-weight: 800;
+  color: #1e40af !important; letter-spacing: 0.3px;
+  text-decoration: none;
+}
+.nav-live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #16a34a; margin-left: 14px;
+}
+.nav-live::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: #16a34a; box-shadow: 0 0 6px #16a34a;
+  animation: livepulse 1.8s ease-in-out infinite;
+}
+@keyframes livepulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.3; transform:scale(1.5); }
+}
+
+/* ── BUTTONS — matching first.html style ── */
+.btn-main {
+  padding: 13px 32px; border-radius: 50px;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.2px;
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.btn-main::after {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.45s ease;
+}
+.btn-main:hover::after { left: 150%; }
+.btn-main:hover { transform: translateY(-3px) scale(1.05); }
+.btn-main:active { transform: scale(0.97); }
+
+/* primary = blue-purple gradient (same as first.html Start Learning) */
+.btn-warning.btn-main {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border: none; color: #fff;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+}
+.btn-warning.btn-main:hover { box-shadow: 0 8px 32px rgba(37,99,235,0.5); color: #fff; }
+
+.btn-outline-light.btn-main {
+  background: rgba(255,255,255,0.85);
+  border: 2px solid #2563eb;
+  color: #2563eb;
+}
+.btn-outline-light.btn-main:hover {
+  background: #2563eb; color: #fff;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.3);
+}
+
+/* ── SECTION HELPERS ── */
+.section-eyebrow {
+  font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #64748b; margin-bottom: 10px;
+}
+.section-title {
+  font-size: clamp(26px,4vw,36px); font-weight: 800;
+  line-height: 1.2; margin-bottom: 10px; color: #1e293b;
+}
+.section-title-gradient {
+  font-size: clamp(28px,5vw,44px); font-weight: 800;
+  line-height: 1.15; margin-bottom: 10px;
+  background: linear-gradient(135deg,#1e40af 10%,#2563eb 45%,#7c3aed 85%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.section-sub { color: #64748b; font-size: 15px; margin-bottom: 20px; }
+
+/* ── PAGE HERO ── */
+.page-hero { padding: 100px 20px 64px; text-align: center; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; padding: 6px 16px; border-radius: 50px;
+  background: rgba(37,99,235,0.08);
+  border: 1px solid rgba(37,99,235,0.2);
+  color: #2563eb; margin-bottom: 24px; letter-spacing: 0.4px;
+}
+
+/* ── FEATURE GRID CARDS ── */
+.feat-card { padding: 28px 24px; height: 100%; display: flex; flex-direction: column; }
+.feat-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 18px; flex-shrink: 0;
+  background: linear-gradient(135deg,#dbeafe,#ede9fe);
+  border: 1px solid rgba(99,179,237,0.3);
+  transition: transform 0.3s ease;
+}
+.glass:hover .feat-icon-wrap { transform: scale(1.12) rotate(-4deg); }
+.feat-card h5   { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+.feat-card .tagline { font-size: 13px; color: #64748b; margin-bottom: 12px; }
+.feat-card p    { font-size: 14px; color: #475569; line-height: 1.65; flex: 1; }
+.highlights     { list-style: none; padding: 0; margin: 14px 0 0; }
+.highlights li  {
+  font-size: 13px; color: #475569;
+  padding: 5px 0; display: flex; align-items: center; gap: 8px;
+  border-top: 1px solid rgba(99,179,237,0.15);
+}
+.highlights li::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent,#2563eb); flex-shrink: 0;
+}
+
+/* ── HOW IT WORKS ── */
+.step-row { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px; }
+.step-num  { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #94a3b8; min-width: 28px; padding-top: 3px; }
+.step-icon-wrap {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  background: linear-gradient(135deg,#dbeafe,#ede9fe);
+  border: 1px solid rgba(99,179,237,0.3);
+}
+.step-content h6 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #1e293b; }
+.step-content p  { font-size: 14px; color: #64748b; margin: 0; line-height: 1.6; }
+.step-connector  {
+  width: 1px; height: 24px;
+  background: linear-gradient(to bottom,rgba(99,179,237,0.35),transparent);
+  margin: 0 0 0 48px;
+}
+
+/* ── TECH SPECS ── */
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 16px; }
+.spec-card {
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(99,179,237,0.25);
+  border-radius: 14px; padding: 20px 18px; text-align: center;
+  box-shadow: 0 2px 12px rgba(99,130,180,0.07);
+  transition: all 0.3s ease;
+}
+.spec-card:hover {
+  background: #fff; border-color: rgba(99,179,237,0.5);
+  transform: translateY(-4px); box-shadow: 0 8px 24px rgba(99,130,180,0.14);
+}
+.spec-icon { font-size: 22px; margin-bottom: 8px; }
+.spec-val  { font-size: 22px; font-weight: 800; color: #2563eb; margin-bottom: 4px; }
+.spec-lbl  { font-size: 12px; color: #94a3b8; letter-spacing: 0.4px; }
+
+/* ── FAQ ── */
+.faq-item { border-bottom: 1px solid rgba(99,179,237,0.18); overflow: hidden; }
+.faq-question {
+  width: 100%; background: none; border: none; text-align: left;
+  color: #1e293b; font-size: 15px; font-weight: 600; font-family: 'Segoe UI',sans-serif;
+  padding: 18px 0; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; transition: color 0.2s;
+}
+.faq-question:hover { color: #2563eb; }
+.faq-chevron {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(99,179,237,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #2563eb;
+  transition: transform 0.3s ease, background 0.2s;
+}
+.faq-item.open .faq-chevron { transform: rotate(180deg); background: rgba(37,99,235,0.15); }
+.faq-answer {
+  font-size: 14px; color: #475569; line-height: 1.7;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease; padding: 0;
+}
+.faq-item.open .faq-answer { max-height: 200px; padding-bottom: 18px; }
+
+/* ── CTA STRIP ── */
+.cta-strip {
+  background: linear-gradient(135deg,rgba(37,99,235,0.06),rgba(124,58,237,0.08));
+  border: 1px solid rgba(99,179,237,0.25);
+  border-radius: 20px; padding: 52px 32px; text-align: center;
+  position: relative; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(99,130,180,0.08);
+}
+.cta-strip::before {
+  content: ''; position: absolute; width: 280px; height: 280px;
+  border-radius: 50%; background: rgba(99,179,237,0.07);
+  top: -100px; left: -60px;
+}
+.cta-strip h2 { color: #1e293b; }
+.cta-strip p  { color: #64748b; }
+
+/* ── FOOTER — exact from first.html ── */
+footer {
+  margin-top: 80px; padding: 28px 20px; text-align: center;
+  font-size: 14px; color: #94a3b8;
+  border-top: 1px solid rgba(99,179,237,0.2);
+  background: rgba(255,255,255,0.65);
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity:0; transform:translateY(28px); transition:opacity 0.6s ease,transform 0.6s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="page-content">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a href="first.html" class="navbar-brand">
+        ⚡ Virtual Flow Lab <span class="nav-live">Live</span>
+      </a>
+      <div class="d-flex gap-2 ms-auto">
+        <a href="first.html" class="btn btn-outline-light btn-main" style="padding:9px 22px;font-size:13px;">← Home</a>
+        <a href="login.html" class="btn btn-warning     btn-main" style="padding:9px 22px;font-size:13px;">🚀 Start Learning</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="hero-badge">✨ Platform overview</div>
+    <div class="section-title-gradient">Everything Virtual Flow Lab can do</div>
+    <p class="section-sub" style="max-width:540px;margin:8px auto 0;">
+      From theory to certified experiment — one platform, real hardware, zero lab coat required.
+    </p>
+  </div>
+
+  <!-- SECTION 1 — FEATURES GRID -->
+  <div class="container mb-5 reveal">
+    <div class="mb-4">
+      <div class="section-eyebrow">Features</div>
+      <div class="section-title">What you get</div>
+    </div>
+    <div class="row g-4" id="features-grid"></div>
+  </div>
+
+  <!-- SECTION 2 — HOW IT WORKS -->
+  <div class="container mb-5 reveal">
+    <div class="row align-items-start g-5">
+      <div class="col-lg-4">
+        <div class="section-eyebrow">Process</div>
+        <div class="section-title">How it works</div>
+        <p class="section-sub">Six steps from sign-up to certified experiment.</p>
+        <a href="login.html" class="btn btn-warning btn-main mt-2">Get started 🚀</a>
+      </div>
+      <div class="col-lg-8">
+        <div id="steps-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 — TECH SPECS -->
+  <div class="container mb-5 reveal">
+    <div class="text-center mb-4">
+      <div class="section-eyebrow">Under the hood</div>
+      <div class="section-title">Technical specs</div>
+    </div>
+    <div class="spec-grid" id="specs-grid"></div>
+  </div>
+
+  <!-- SECTION 4 — FAQ -->
+  <div class="container mb-5 reveal" style="max-width:780px;">
+    <div class="text-center mb-4">
+      <div class="section-eyebrow">Questions</div>
+      <div class="section-title">Frequently asked</div>
+    </div>
+    <div class="glass p-4" id="faq-list"></div>
+  </div>
+
+  <!-- CTA STRIP -->
+  <div class="container mb-5 reveal">
+    <div class="cta-strip">
+      <h2 style="font-size:clamp(22px,4vw,34px);font-weight:800;margin-bottom:10px;">
+        Ready to run your first experiment?
+      </h2>
+      <p style="font-size:15px;margin-bottom:28px;">
+        Join thousands of students already learning on real hardware — from anywhere.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="login.html" class="btn btn-warning      btn-main">🚀 Start for free</a>
+        <a href="first.html" class="btn btn-outline-light btn-main">← Back to home</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2026 Virtual Flow Control Lab &nbsp;·&nbsp; Built by Ajitdada Gharge 🚀</footer>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   VFL DATA
+══════════════════════════════════════════════ */
+const VFL = {
+  features: [
+    { icon:"📖", color:"#2563eb", title:"Learning Modules",          tagline:"Master theory before you touch the hardware",      description:"Structured pre-lab modules walk you through the underlying fluid-dynamics theory, safety protocols, and standard operating procedures. Each module includes short quizzes to confirm understanding before you are allowed to book a hardware slot.", highlights:["Video walkthroughs + written theory","Safety checklist per experiment type","Auto-graded quizzes with instant feedback","Progress tracking across all modules"] },
+    { icon:"📅", color:"#7c3aed", title:"Slot Booking",               tagline:"Reserve your time — no conflicts, ever",            description:"A real-time calendar lets you see every available hardware window across all rigs. Once you pick a slot it is exclusively yours — no double-booking, no interruptions. You receive an email reminder 15 minutes before your session starts.", highlights:["Live availability calendar","Exclusive 30 / 60 / 90-minute slots","Email + in-app reminder system","Easy reschedule or cancellation"] },
+    { icon:"🎮", color:"#059669", title:"Real-Time Hardware Control", tagline:"Operate pumps, valves and sensors live",             description:"During your booked slot you get a full-screen control panel with actuator toggles, setpoint sliders, and a live video feed from the rig camera. Every command you send is executed in under 20 ms.", highlights:["Pump speed & valve position control","Live HD camera feed of the rig","Emergency stop button always visible","Command log for full audit trail"] },
+    { icon:"📊", color:"#d97706", title:"Live Data Monitoring",        tagline:"Sensor graphs that update every second",            description:"Flow rate, pressure, temperature, and level sensors stream data directly to your browser. Charts update in real-time so you can observe system behaviour as it happens and make immediate adjustments.", highlights:["Multi-sensor dashboard in one view","Zoom and pan on any time-window","Threshold alerts with visual warnings","Annotate chart events during the run"] },
+    { icon:"💾", color:"#0284c7", title:"Data Export & Analysis",      tagline:"Download raw CSV or auto-generated reports",       description:"After your session ends all sensor data is packaged into a timestamped CSV you can download instantly. An auto-generated PDF report includes your experiment metadata, graphs, and a statistical summary.", highlights:["CSV download — all sensor channels","Auto PDF report with graphs","Compatible with Excel, MATLAB, Python","Data stored for 90 days post-session"] },
+    { icon:"👥", color:"#db2777", title:"Team Collaboration",          tagline:"Invite teammates to observe your live session",    description:"Share a read-only live link with up to 10 observers. Observers see the same real-time graphs and camera feed, and can chat in a session-specific sidebar. Only the host controls the hardware.", highlights:["Up to 10 live observers per session","In-session chat sidebar","Role-based access (host vs. observer)","Share link expires when session ends"] },
+    { icon:"🏅", color:"#ea580c", title:"Certificates & Badges",       tagline:"Earn verifiable credentials for every experiment", description:"Complete an experiment end-to-end and a digitally signed certificate is issued automatically. Certificates are verifiable via a public URL and can be added directly to your LinkedIn profile.", highlights:["Digitally signed PDF certificate","Public verification link","One-click LinkedIn integration","Badge wall on your profile page"] },
+    { icon:"🛡️", color:"#6d28d9", title:"Safety & Compliance",         tagline:"Hardware protected at every level",                description:"All rigs have software-enforced operating limits. If a setpoint would take a sensor outside safe bounds the command is blocked and you are notified. A dedicated watchdog server monitors every rig 24/7.", highlights:["Software-enforced actuator limits","Real-time watchdog monitoring","Automatic shutdown on fault detection","Full incident log accessible to admins"] },
+  ],
+  steps: [
+    { number:"01", icon:"🔐", title:"Create your account",         detail:"Sign up with your institutional email. Verify your account, complete your profile, and get instant access to all learning modules." },
+    { number:"02", icon:"📖", title:"Complete the pre-lab module",  detail:"Pick the experiment you want to run. Study the theory and safety content, then pass the short quiz. This unlocks the booking calendar for that experiment." },
+    { number:"03", icon:"📅", title:"Book a hardware slot",         detail:"Choose a free window on the live calendar. Select 30, 60, or 90 minutes. Your slot is confirmed immediately and added to your dashboard." },
+    { number:"04", icon:"🎮", title:"Run your experiment",          detail:"At your start time the control panel unlocks. Operate the hardware, watch the live camera feed, and monitor all sensor graphs in real time." },
+    { number:"05", icon:"📊", title:"Analyze & export data",        detail:"When your session ends, download your CSV data and auto-generated PDF report. Share results with teammates or your supervisor." },
+    { number:"06", icon:"🏅", title:"Earn your certificate",        detail:"A digitally signed certificate is issued automatically. Add it to LinkedIn or share the public verification link." },
+  ],
+  specs: [
+    { label:"Control latency",    value:"< 20 ms",      icon:"⚡" },
+    { label:"Sensor sample rate", value:"1 Hz",         icon:"📡" },
+    { label:"Video feed",         value:"720p / 30fps", icon:"🎥" },
+    { label:"Data retention",     value:"90 days",      icon:"💾" },
+    { label:"Max observers",      value:"10 / session", icon:"👥" },
+    { label:"Uptime SLA",         value:"99.8 %",       icon:"🛡️" },
+  ],
+  faq: [
+    { q:"Do I need any special hardware to use Virtual Flow Lab?",       a:"No. All you need is a modern browser (Chrome, Firefox, Edge, Safari) and a stable internet connection of at least 5 Mbps for the live video feed." },
+    { q:"Can I use Virtual Flow Lab on a mobile device?",                a:"The learning modules and data export pages work on mobile. The hardware control panel is optimised for a desktop or tablet screen (1024 px wide or more) for the best experience." },
+    { q:"What happens if my internet drops during a session?",           a:"The rig switches to a safe-hold state automatically — all actuators freeze at their last setpoint. When you reconnect within 2 minutes your session resumes. After 2 minutes the slot is released and rescheduled free of charge." },
+    { q:"How do I reschedule or cancel a slot?",                         a:"Open your dashboard, find the booking, and click 'Reschedule' or 'Cancel'. Cancellations made more than 30 minutes before the start time are free. Late cancellations count against your monthly booking allowance." },
+    { q:"Are the certificates recognised by universities?",              a:"Certificates are digitally signed and publicly verifiable. Recognition depends on your institution's policy. Several partner universities formally accept them as lab credit — check the Institutions page for the current list." },
+    { q:"Can my whole lab group share one session?",                     a:"Yes. The session host controls the hardware while up to 10 teammates observe the live feed and charts in real time via a shared link. Only one person controls the rig at a time." },
+    { q:"Is my experiment data private?",                                a:"Yes. Your data is stored encrypted and is only accessible to you, your invited observers, and your institution admin. It is never shared with third parties." },
+    { q:"What experiments are currently available?",                     a:"The current catalogue includes: pipe flow & head loss, centrifugal pump characteristics, flow over a weir, orifice & venturi meter, and Reynolds number demonstration. New rigs are added every semester." },
+  ],
+};
+
+/* ══ RENDER FEATURES ══ */
+(function(){
+  const grid = document.getElementById('features-grid');
+  VFL.features.forEach(f => {
+    const col = document.createElement('div');
+    col.className = 'col-md-6 col-lg-4';
+    col.innerHTML = `
+      <div class="glass feat-card h-100">
+        <div class="feat-icon-wrap">${f.icon}</div>
+        <h5>${f.title}</h5>
+        <div class="tagline">${f.tagline}</div>
+        <p>${f.description}</p>
+        <ul class="highlights">
+          ${f.highlights.map(h=>`<li style="--accent:${f.color}">${h}</li>`).join('')}
+        </ul>
+      </div>`;
+    grid.appendChild(col);
+  });
+})();
+
+/* ══ RENDER STEPS ══ */
+(function(){
+  const list = document.getElementById('steps-list');
+  VFL.steps.forEach((s,i) => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div class="step-row">
+        <div class="step-num">${s.number}</div>
+        <div class="step-icon-wrap">${s.icon}</div>
+        <div class="step-content">
+          <h6>${s.title}</h6>
+          <p>${s.detail}</p>
+        </div>
+      </div>
+      ${i < VFL.steps.length-1 ? '<div class="step-connector"></div>' : ''}`;
+    list.appendChild(div);
+  });
+})();
+
+/* ══ RENDER SPECS ══ */
+(function(){
+  const grid = document.getElementById('specs-grid');
+  VFL.specs.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'spec-card';
+    card.innerHTML = `<div class="spec-icon">${s.icon}</div><div class="spec-val">${s.value}</div><div class="spec-lbl">${s.label}</div>`;
+    grid.appendChild(card);
+  });
+})();
+
+/* ══ RENDER FAQ ══ */
+(function(){
+  const list = document.getElementById('faq-list');
+  VFL.faq.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'faq-item';
+    el.innerHTML = `
+      <button class="faq-question">${item.q}<span class="faq-chevron">▾</span></button>
+      <div class="faq-answer">${item.a}</div>`;
+    list.appendChild(el);
+  });
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.faq-question');
+    if (!btn) return;
+    const item = btn.closest('.faq-item');
+    const was  = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el=>el.classList.remove('open'));
+    if (!was) item.classList.add('open');
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   CANVAS ANIMATION
+   • Background particles + connections: BLUE  (same as first.html)
+   • Interactive bubbles (mouse trail, click,
+     scroll burst):              ORANGE only
+══════════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  let W, H;
+  let particles = [], bubbles = [];
+  let mouse = { x:-999, y:-999 };
+
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── mouse trail — orange bubbles ── */
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    bubbles.push(new Bubble(e.clientX, e.clientY, false));
+  });
+
+  /* ── click explosion — orange bubbles ── */
+  window.addEventListener('click', e => {
+    for (let i = 0; i < 28; i++) bubbles.push(new Bubble(e.clientX, e.clientY, true));
+  });
+
+  /* blue particle palette — identical to first.html */
+  const P_COLORS = ['#93c5fd','#a5b4fc','#c4b5fd','#67e8f9','#6ee7b7','#fca5a5'];
+
+  /* orange bubble palette */
+  const B_COLORS = ['#ff8c00','#ffa500','#ffb300','#ff6a00','#ff7b00','#ffc200','#ff4500'];
+
+  /* ── Background Particle (blue) ── */
+  function Particle(){
+    this.x     = Math.random()*W;
+    this.y     = Math.random()*H;
+    this.r     = Math.random()*2+0.5;
+    this.vx    = (Math.random()-0.5)*0.35;
+    this.vy    = (Math.random()-0.5)*0.35;
+    this.color = P_COLORS[Math.floor(Math.random()*P_COLORS.length)];
+    this.alpha = Math.random()*0.45+0.15;
+  }
+  Particle.prototype.update = function(){
+    const dx = this.x-mouse.x, dy = this.y-mouse.y;
+    const d  = Math.sqrt(dx*dx+dy*dy);
+    if (d < 120 && d > 0){ const f=(120-d)/120*0.5; this.vx+=(dx/d)*f; this.vy+=(dy/d)*f; }
+    const sp = Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+    if (sp>1.4){ this.vx*=1.4/sp; this.vy*=1.4/sp; }
+    this.x+=this.vx; this.y+=this.vy;
+    if(this.x<0)this.x=W; if(this.x>W)this.x=0;
+    if(this.y<0)this.y=H; if(this.y>H)this.y=0;
+  };
+
+  /* ── Orange Bubble (interactive) ── */
+  function Bubble(x,y,explode){
+    this.x     = x; this.y = y;
+    this.r     = explode ? Math.random()*38+8 : Math.random()*18+4;
+    this.alpha = 0.72;
+    this.color = B_COLORS[Math.floor(Math.random()*B_COLORS.length)];
+    this.life  = explode ? 90 : 52;
+    if (explode){
+      const a=Math.random()*Math.PI*2, sp=Math.random()*3+1;
+      this.vx=Math.cos(a)*sp; this.vy=Math.sin(a)*sp;
+    } else {
+      this.vx=(Math.random()-0.5)*0.5;
+      this.vy=Math.random()*-1.2-0.3;
+    }
+  }
+  Bubble.prototype.update = function(){ this.x+=this.vx; this.y+=this.vy; this.alpha-=0.012; this.life--; };
+  Bubble.prototype.draw   = function(){
+    // filled circle
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle = this.color+(Math.round(this.alpha*255).toString(16).padStart(2,'0'));
+    ctx.fill();
+    // ring edge
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,220,120,${this.alpha*0.35})`;
+    ctx.lineWidth=1; ctx.stroke();
+    // specular highlight
+    ctx.beginPath();
+    ctx.arc(this.x-this.r*0.28,this.y-this.r*0.32,this.r*0.18,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,200,${this.alpha*0.5})`; ctx.fill();
+  };
+
+  /* init particles — same count as first.html */
+  const COUNT = Math.min(140, Math.floor(W*H/9000));
+  for (let i=0;i<COUNT;i++) particles.push(new Particle());
+
+  /* ── DRAW LOOP ── */
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    /* blue connection lines — exact from first.html */
+    for (let i=0;i<particles.length;i++){
+      for (let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(147,197,253,${(1-d/100)*0.22})`;
+          ctx.lineWidth=0.7; ctx.stroke();
+        }
+      }
+    }
+
+    /* blue background particles */
+    particles.forEach(p=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.globalAlpha=p.alpha; ctx.fill();
+      ctx.globalAlpha=1; p.update();
+    });
+
+    /* orange interactive bubbles */
+    for(let i=bubbles.length-1;i>=0;i--){
+      bubbles[i].update(); bubbles[i].draw();
+      if(bubbles[i].life<=0||bubbles[i].alpha<=0) bubbles.splice(i,1);
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  /* ── SCROLL BURST — orange bubbles ── */
+  let lastY=window.scrollY, cd=false;
+  window.addEventListener('scroll',()=>{
+    const dy=Math.abs(window.scrollY-lastY); lastY=window.scrollY;
+    if(cd||dy<5) return;
+    cd=true; setTimeout(()=>cd=false,80);
+    const n=Math.min(4+Math.floor(dy/25),7);
+    for(let k=0;k<3;k++){
+      const rx=80+Math.random()*(W-160), ry=80+Math.random()*(window.innerHeight-160);
+      for(let i=0;i<n;i++) bubbles.push(new Bubble(rx,ry,false));
+    }
+  },{passive:true});
+
+})();
+
+/* ══ SCROLL REVEAL ══ */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

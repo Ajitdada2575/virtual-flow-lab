@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Main Dashboard</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #1e293b;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f6ff;
+}
+
+/* ── PARTICLE CANVAS ── */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── SOFT RADIAL GLOWS ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 15%, rgba(99,179,237,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 85%, rgba(167,139,250,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.55) 0%, transparent 80%);
+}
+
+.page-content { position: relative; z-index: 2; }
+
+/* ── GLASS CARD ── */
+.glass {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99,179,237,0.28);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(99,130,180,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.glass:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 14px 40px rgba(99,130,180,0.18), inset 0 1px 0 #fff;
+  border-color: rgba(99,179,237,0.55);
+}
+
+/* ── NAVBAR ── */
+.navbar {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(99,179,237,0.2);
+  box-shadow: 0 2px 12px rgba(99,130,180,0.08);
+  position: relative; z-index: 10;
+}
+.navbar-brand-text {
+  font-size: 20px; font-weight: 800;
+  color: #1e40af; letter-spacing: 0.3px;
+}
+.nav-live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #16a34a; margin-left: 14px;
+}
+.nav-live::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: #16a34a; box-shadow: 0 0 6px #16a34a;
+  animation: livepulse 1.8s ease-in-out infinite;
+}
+@keyframes livepulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(1.5);} }
+
+/* ── BUTTONS ── */
+.btn-main {
+  padding: 10px 26px; border-radius: 50px;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.btn-main::after {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.45s ease;
+}
+.btn-main:hover::after { left: 150%; }
+.btn-main:hover { transform: translateY(-2px) scale(1.04); }
+.btn-main:active { transform: scale(0.97); }
+
+.btn-primary.btn-main {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border: none; color: #fff;
+  box-shadow: 0 4px 18px rgba(37,99,235,0.32);
+}
+.btn-primary.btn-main:hover { box-shadow: 0 8px 28px rgba(37,99,235,0.48); color: #fff; }
+
+.btn-success.btn-main {
+  background: linear-gradient(135deg, #059669, #10b981);
+  border: none; color: #fff;
+  box-shadow: 0 4px 18px rgba(5,150,105,0.28);
+}
+.btn-success.btn-main:hover { box-shadow: 0 8px 28px rgba(5,150,105,0.42); color: #fff; }
+.btn-success.btn-main:disabled { opacity: 0.45; transform: none; cursor: not-allowed; }
+
+.btn-logout {
+  padding: 7px 18px; border-radius: 50px;
+  font-size: 13px; font-weight: 700;
+  background: rgba(239,68,68,0.08);
+  border: 1.5px solid rgba(239,68,68,0.35);
+  color: #dc2626;
+  transition: all 0.25s ease;
+}
+.btn-logout:hover {
+  background: #dc2626; color: #fff;
+  box-shadow: 0 4px 16px rgba(220,38,38,0.3);
+  transform: translateY(-1px);
+}
+
+/* ── STAT CARDS ── */
+.card-box {
+  border-radius: 18px; padding: 24px 22px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99,179,237,0.28);
+  box-shadow: 0 4px 24px rgba(99,130,180,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+.card-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 36px rgba(99,130,180,0.18);
+}
+.card-box h6 {
+  font-size: 12px; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 10px; font-weight: 600;
+}
+.card-box h3 { font-size: 38px; font-weight: 800; margin: 0; }
+.card-box .card-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 14px;
+}
+
+/* ── SLOT BOX ── */
+.slot-box {
+  border-left: 4px solid #2563eb;
+  padding: 22px 24px;
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(99,130,180,0.1);
+  transition: box-shadow 0.3s ease;
+}
+.slot-box:hover { box-shadow: 0 10px 32px rgba(99,130,180,0.18); }
+.slot-box h6 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+.slot-box p  { color: #64748b; margin: 0; font-size: 14px; }
+
+/* ── WELCOME SECTION ── */
+.welcome-title { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+.welcome-sub   { color: #64748b; font-size: 15px; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 18px; font-weight: 800; color: #1e293b;
+  margin-bottom: 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 72px; padding: 24px 20px; text-align: center;
+  font-size: 13px; color: #94a3b8;
+  border-top: 1px solid rgba(99,179,237,0.2);
+  background: rgba(255,255,255,0.6);
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="page-content">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="navbar-brand-text">
+        ⚡ Lab Dashboard
+        <span class="nav-live">Live</span>
+      </span>
+      <div class="d-flex align-items-center gap-3">
+        <span id="username" style="font-size:14px;font-weight:600;color:#475569;"></span>
+        <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+
+    <!-- Welcome Row -->
+    <div class="d-flex justify-content-between align-items-center reveal">
+      <div>
+        <div class="welcome-title">Welcome back, <span id="name">User</span>! 👋</div>
+        <div class="welcome-sub">Here's your lab activity overview.</div>
+      </div>
+      <button class="btn btn-primary btn-main" onclick="goBooking()">📅 Book New Slot</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mt-4 g-4 reveal">
+
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="card-icon" style="background:linear-gradient(135deg,#dbeafe,#ede9fe);">📅</div>
+          <h6>Upcoming Bookings</h6>
+          <h3 id="upcoming" style="color:#2563eb;">0</h3>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="card-icon" style="background:linear-gradient(135deg,#dcfce7,#d1fae5);">✅</div>
+          <h6>Experiments Completed</h6>
+          <h3 id="completed" style="color:#059669;">0</h3>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card-box">
+          <div class="card-icon" style="background:linear-gradient(135deg,#fef9c3,#fde68a);">⏱️</div>
+          <h6>Total Lab Hours</h6>
+          <h3 id="hours" style="color:#d97706;">0</h3>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Next Slot -->
+    <div class="mt-5 reveal">
+      <div class="section-label mb-3">🔬 Your Next Slot</div>
+      <div class="slot-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+          <h6 id="experiment">No Slot Booked</h6>
+          <p id="time">Book a slot to get started</p>
+        </div>
+        <button class="btn btn-success btn-main" id="enterBtn" onclick="enterLab()" disabled>
+          Enter Lab →
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>© 2026 Virtual Flow Control Lab &nbsp;·&nbsp; Built by Ajitdada Gharge 🚀</footer>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ── BLACK CURSOR BUBBLE PARTICLES ── */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  const bubbles = [];
+  let mouse = { x: -999, y: -999 };
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* Spawn a bubble at cursor position on mouse move */
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    /* spawn 1-2 bubbles per move */
+    if(Math.random() > 0.4){
+      bubbles.push({
+        x: e.clientX + (Math.random()-0.5)*12,
+        y: e.clientY + (Math.random()-0.5)*12,
+        r: Math.random()*7 + 3,
+        alpha: Math.random()*0.35 + 0.1,
+        vx: (Math.random()-0.5)*0.6,
+        vy: -(Math.random()*1.2 + 0.4),   /* float upward */
+        decay: Math.random()*0.008 + 0.006
+      });
+    }
+  });
+
+  /* Background floating particles (light blue) */
+  const COLORS = ['#93c5fd','#a5b4fc','#c4b5fd','#67e8f9','#6ee7b7'];
+  const bgParticles = [];
+  function BgParticle(){
+    this.x=Math.random()*window.innerWidth;
+    this.y=Math.random()*window.innerHeight;
+    this.r=Math.random()*2+0.5;
+    this.vx=(Math.random()-0.5)*0.3;
+    this.vy=(Math.random()-0.5)*0.3;
+    this.color=COLORS[Math.floor(Math.random()*COLORS.length)];
+    this.alpha=Math.random()*0.4+0.12;
+  }
+  BgParticle.prototype.update=function(){
+    this.x+=this.vx; this.y+=this.vy;
+    if(this.x<0)this.x=W; if(this.x>W)this.x=0;
+    if(this.y<0)this.y=H; if(this.y>H)this.y=0;
+  };
+  const COUNT = Math.min(120, Math.floor(window.innerWidth*window.innerHeight/10000));
+  for(let i=0;i<COUNT;i++) bgParticles.push(new BgParticle());
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    /* Background network dots */
+    for(let i=0;i<bgParticles.length;i++){
+      for(let j=i+1;j<bgParticles.length;j++){
+        const dx=bgParticles[i].x-bgParticles[j].x;
+        const dy=bgParticles[i].y-bgParticles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){
+          ctx.beginPath();
+          ctx.moveTo(bgParticles[i].x,bgParticles[i].y);
+          ctx.lineTo(bgParticles[j].x,bgParticles[j].y);
+          ctx.strokeStyle=`rgba(147,197,253,${(1-d/100)*0.2})`;
+          ctx.lineWidth=0.7; ctx.stroke();
+        }
+      }
+      const p=bgParticles[i];
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.globalAlpha=p.alpha; ctx.fill(); ctx.globalAlpha=1;
+      p.update();
+    }
+
+    /* Black cursor bubbles */
+    for(let i=bubbles.length-1; i>=0; i--){
+      const b = bubbles[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      b.alpha -= b.decay;
+      b.r += 0.08;
+      if(b.alpha <= 0){ bubbles.splice(i,1); continue; }
+
+      /* draw ring-style bubble */
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(15,23,42,${b.alpha})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      /* small filled core */
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r*0.28, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(15,23,42,${b.alpha*0.5})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── SCROLL REVEAL ── */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ── NAVIGATION ── */
+function goBooking(){ window.location.href='booking.html'; }
+function enterLab(){  window.location.href='lab.html'; }
+function logout(){    window.location.href='login.html'; }
+</script>
+
+<!-- Your existing JS module -->
+<script type="module" src="../js/maindashboard.js"></script>
+
+</body>
+</html>

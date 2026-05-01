@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Virtual Lab</title>
+
+<!-- Local Bootstrap -->
+<link rel="stylesheet" href="../css/bootstrap.min.css">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark">
+<div class="container">
+<a class="navbar-brand">🔬 Virtual Lab</a>
+
+<button
+class="btn btn-outline-light"
+onclick="openLogin()"
+>
+Login
+</button>
+
+</div>
+</nav>
+
+<!-- Hero Section -->
+<div class="container mt-5 text-center">
+
+<h1 class="fw-bold">
+Virtual Lab Access System
+</h1>
+
+<p class="text-muted mt-3">
+Book slots, access lab, monitor sessions
+</p>
+
+<button
+class="btn btn-primary btn-lg mt-3"
+onclick="goDashboard()"
+>
+🚀 Get Started
+</button>
+
+</div>
+
+<!-- Login Modal -->
+<div
+class="modal fade"
+id="loginModal"
+tabindex="-1"
+>
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">🔐 Login</h5>
+
+<button
+type="button"
+class="btn-close"
+data-bs-dismiss="modal">
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="mb-3">
+<label>Email</label>
+<input
+type="text"
+id="email"
+class="form-control"
+>
+</div>
+
+<div class="mb-3">
+<label>Password</label>
+<input
+type="password"
+id="password"
+class="form-control"
+>
+</div>
+
+<button
+class="btn btn-primary w-100"
+onclick="loginUser()"
+>
+Login
+</button>
+
+<p
+id="result"
+class="text-danger mt-2 text-center"
+></p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Local Bootstrap JS -->
+<script src="../js/bootstrap.bundle.min.js"></script>
+
+<!-- Auth Module -->
+<script type="module" src="../js/auth.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+const loginModal = new bootstrap.Modal(
+document.getElementById("loginModal")
+);
+
+// First Visit → Show Login
+const user = localStorage.getItem("user");
+
+if(!user){
+loginModal.show();
+}
+
+// Login Button
+window.openLogin = function(){
+loginModal.show();
+}
+
+// Get Started Button
+window.goDashboard = function(){
+
+const user = localStorage.getItem("user");
+
+if(!user){
+loginModal.show();
+return;
+}
+
+window.location.href = "dashboard.html";
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
