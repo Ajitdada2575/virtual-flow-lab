@@ -1,4 +1,4 @@
-# Virtual  Lab 
+# Virtual  Lab Management System
 
 ## Project Overview
 Virtual Flow Lab is a full-stack system to:
