@@ -14,9 +14,7 @@
 
 ---
 
-** Developed for the National Instruments (NI) National Level Hackathon 2026**
 
-** Selected as Best Industry Level Hackathon Project under the Educational Category**
 
 </div>
 
